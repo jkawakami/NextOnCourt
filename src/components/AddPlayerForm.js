@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 
-const AddPlayerForm = ({ onAddPlayer }) => {
+const AddPlayerForm = forwardRef(({ onAddPlayer, minimal }, inputRef) => {
   const [playerName, setPlayerName] = useState('');
 
   const handleSubmit = (e) => {
@@ -12,8 +12,8 @@ const AddPlayerForm = ({ onAddPlayer }) => {
   };
 
   return (
-    <div className="add-player-form">
-      <h3>Add Player</h3>
+    <div className={`add-player-form${minimal ? ' minimal' : ''}`}>
+      {!minimal && <h3>Add Player</h3>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <input
@@ -23,14 +23,19 @@ const AddPlayerForm = ({ onAddPlayer }) => {
             placeholder="Enter player name"
             className="form-input"
             maxLength={30}
+            ref={inputRef}
           />
-          <button type="submit" className="btn btn-success">
-            Add
-          </button>
+          {!minimal && (
+            <button type="submit" className="btn btn-success">
+              Add
+            </button>
+          )}
         </div>
       </form>
     </div>
   );
-};
+});
+
+AddPlayerForm.displayName = 'AddPlayerForm';
 
 export default AddPlayerForm; 

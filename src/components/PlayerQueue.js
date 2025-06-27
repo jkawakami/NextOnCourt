@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AddPlayerForm from './AddPlayerForm';
 
 const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers }) => {
   const [draggedPlayer, setDraggedPlayer] = useState(null);
@@ -8,6 +9,7 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
   const [editingPlayer, setEditingPlayer] = useState(null); // player id or null
   const [editName, setEditName] = useState('');
   const menuRefs = useRef({});
+  const addPlayerInputRef = useRef(null);
 
   useEffect(() => {
     if (menuOpen !== null) {
@@ -135,12 +137,29 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
 
   return (
     <div className="player-queue">
-      <h3>Player Queue ({players.length})</h3>
-      {players.length === 0 ? (
-        <p className="empty-queue">No players in queue. Add some players to get started!</p>
-      ) : (
-        <div className={`queue-list ${compactMode !== 'normal' ? compactMode : ''}`}>
-          {playerGroups.map((group) => (
+      {/* <h3>Player Queue ({players.length})</h3> */}
+      <div className={`queue-list${compactMode !== 'normal' ? ' ' + compactMode : ''}${menuOpen !== null ? ' menu-active' : ''}`}>
+        {players.length === 0 ? (
+          <div className="player-group">
+            <div className="player-group-items">
+              <div
+                className="player-item add-player-item"
+                style={{ cursor: 'text' }}
+                draggable={false}
+                onClick={() => {
+                  if (addPlayerInputRef.current) addPlayerInputRef.current.focus();
+                }}
+              >
+                <AddPlayerForm
+                  minimal
+                  ref={addPlayerInputRef}
+                  onAddPlayer={onReorderPlayers ? (name) => onReorderPlayers([...players, { id: Date.now(), name, gamesPlayed: 0 }]) : () => {}}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          playerGroups.map((group, groupIdx) => (
             <div key={group.groupNumber} className="player-group">
               <div className="player-group-items">
                 {group.players.map((player, index) => {
@@ -162,7 +181,6 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
                       <div className="player-info">
                         <span className={`player-number ${compactMode !== 'normal' ? compactMode : ''}`}>{globalIndex + 1}</span>
                         <span className={`player-name ${compactMode !== 'normal' ? compactMode : ''}`}>{player.name}</span>
-                        <span className={`games-played ${compactMode !== 'normal' ? compactMode : ''}`}>({player.gamesPlayed} games)</span>
                       </div>
                       <div className="player-actions">
                         <div className={`drag-handle ${compactMode !== 'normal' ? compactMode : ''}`} title="Drag to reorder">
@@ -230,11 +248,28 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
                     </div>
                   );
                 })}
+                {/* If this is the last group, render AddPlayerForm as a player-item */}
+                {groupIdx === playerGroups.length - 1 && (
+                  <div
+                    className="player-item add-player-item"
+                    style={{ cursor: 'text' }}
+                    draggable={false}
+                    onClick={() => {
+                      if (addPlayerInputRef.current) addPlayerInputRef.current.focus();
+                    }}
+                  >
+                    <AddPlayerForm
+                      minimal
+                      ref={addPlayerInputRef}
+                      onAddPlayer={onReorderPlayers ? (name) => onReorderPlayers([...players, { id: Date.now(), name, gamesPlayed: 0 }]) : () => {}}
+                    />
+                  </div>
+                )}
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
       
       {/* Confirmation Popup */}
       {playerToRemove && (

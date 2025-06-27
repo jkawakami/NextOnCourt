@@ -243,6 +243,12 @@ body {
   gap: 0.2rem;
 }
 
+.queue-list.menu-active .player-item:hover {
+  background: inherit;
+  transform: none;
+  /* Remove any other hover effects here if needed */
+}
+
 .player-group {
   background: #f0f2f5;
   border-radius: 8px;
@@ -794,4 +800,99 @@ body {
 }
 .player-menu-wrapper.menu-open .player-menu-dropdown {
   pointer-events: auto;
+}
+
+.timer-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.timer-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.timer-time {
+  /* font-family: 'Roboto Mono', monospace, monospace; */
+  font-size: 1.5em;
+  letter-spacing: 0.05em;
+  min-width: 70px;
+  text-align: center;
+}
+
+.timer-edit-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.timer-input {
+  width: 2.5em;
+  font-size: 1.2em;
+  padding: 0.2em 0.4em;
+  border: 1.5px solid #e1e5e9;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.timer-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.add-player-form.minimal {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.add-player-item {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+  min-height: 50px;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  box-shadow: none;
+  width: 100%;
+}
+
+.add-player-form.minimal .form-group {
+  display: flex;
+  gap: 0;
+  width: 100%;
+}
+
+.add-player-form.minimal .form-input {
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.add-player-form.minimal .form-input:focus {
+  outline: none;
+  background: #e9ecef;
+  border-radius: 4px;
 }
