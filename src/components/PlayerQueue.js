@@ -194,6 +194,15 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
                                     onChange={e => setEditName(e.target.value)}
                                     maxLength={30}
                                     autoFocus
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleEditSave(player);
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleEditCancel();
+                                      }
+                                    }}
                                   />
                                   <div className="player-edit-actions">
                                     <button className="btn btn-success btn-small" onClick={() => handleEditSave(player)}>

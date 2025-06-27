@@ -20,9 +20,8 @@ const TeamDisplay = ({ teams, gameInProgress }) => {
         <div className="team team1">
           <h4>Team 1 (White)</h4>
           <div className="team-players horizontal">
-            {teams.team1.map((player, index) => (
+            {teams.team1.map((player) => (
               <div key={player.id} className="team-player">
-                <span className="player-number">{index + 1}</span>
                 <span className="player-name">{player.name}</span>
               </div>
             ))}
@@ -36,9 +35,8 @@ const TeamDisplay = ({ teams, gameInProgress }) => {
         <div className="team team2">
           <h4>Team 2 (Dark)</h4>
           <div className="team-players horizontal">
-            {teams.team2.map((player, index) => (
+            {teams.team2.map((player) => (
               <div key={player.id} className="team-player">
-                <span className="player-number">{index + 1}</span>
                 <span className="player-name">{player.name}</span>
               </div>
             ))}
