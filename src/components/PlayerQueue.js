@@ -137,7 +137,7 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
 
   return (
     <div className="player-queue">
-      {/* <h3>Player Queue ({players.length})</h3> */}
+      <h3 className="player-queue-title">Player Queue</h3>
       <div className={`queue-list${compactMode !== 'normal' ? ' ' + compactMode : ''}${menuOpen !== null ? ' menu-active' : ''}`}>
         {players.length === 0 ? (
           <div className="player-group">

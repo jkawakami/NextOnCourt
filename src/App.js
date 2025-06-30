@@ -6,8 +6,6 @@ import AddPlayerForm from './components/AddPlayerForm';
 
 function App() {
   const [players, setPlayers] = useState([]);
-  const [currentTeams, setCurrentTeams] = useState({ team1: [], team2: [] });
-  const [gameInProgress, setGameInProgress] = useState(false);
 
   // Load players from localStorage on component mount
   useEffect(() => {
@@ -55,45 +53,25 @@ function App() {
     }
   };
 
-  const startGame = () => {
-    if (players.length >= 10) {
-      // Take the first 10 players in queue order
-      const team1 = players.slice(0, 5);
-      const team2 = players.slice(5, 10);
-      setCurrentTeams({ team1, team2 });
-      setGameInProgress(true);
-    }
-  };
-
   const endGame = () => {
-    if (gameInProgress) {
-      // Only move the first 5 players (Team 1) to the back of the queue
-      const team1Players = currentTeams.team1;
-      const remainingPlayers = players.filter(p => !team1Players.find(tp => tp.id === p.id));
-      
-      // Update games played count for Team 1 players who just played
-      const updatedRemainingPlayers = remainingPlayers.map(p => ({
-        ...p,
-        gamesPlayed: p.gamesPlayed
-      }));
-      
-      const updatedTeam1Players = team1Players.map(p => ({
-        ...p,
-        gamesPlayed: p.gamesPlayed + 1
-      }));
-
-      // Move Team 1 to the back of the queue, keep Team 2 in their current positions
-      setPlayers([...updatedRemainingPlayers, ...updatedTeam1Players]);
-      
-      // Clear the teams display
-      setCurrentTeams({ team1: [], team2: [] });
-      setGameInProgress(false);
+    if (players.length >= 10) {
+      const team1Players = players.slice(0, 5);
+      const team2Players = players.slice(5, 10);
+      const rest = players.slice(10);
+      // Update games played for team1
+      const updatedTeam1Players = team1Players.map(p => ({ ...p, gamesPlayed: p.gamesPlayed + 1 }));
+      setPlayers([...team2Players, ...rest, ...updatedTeam1Players]);
     }
   };
 
   const reorderPlayers = (newPlayers) => {
     setPlayers(newPlayers);
   };
+
+  // Always compute current teams from the first 10 players
+  const currentTeams = players.length >= 10
+    ? { team1: players.slice(0, 5), team2: players.slice(5, 10) }
+    : { team1: [], team2: [] };
 
   return (
     <div className="App">
@@ -106,7 +84,10 @@ function App() {
           <div className="top-section">
             <TeamDisplay 
               teams={currentTeams}
-              gameInProgress={gameInProgress}
+              gameInProgress={players.length >= 10}
+              onNextGame={endGame}
+              nextGameDisabled={players.length < 10}
+              players={players}
             />
           </div>
           
@@ -119,25 +100,6 @@ function App() {
                 onMoveDown={movePlayerDown}
                 onReorderPlayers={reorderPlayers}
               />
-              <div className="actions">
-                <AddPlayerForm onAddPlayer={addPlayer} />
-                <div className="game-actions">
-                  <button 
-                    className="btn btn-primary"
-                    onClick={startGame}
-                    disabled={players.length < 10 || gameInProgress}
-                  >
-                    Start Game
-                  </button>
-                  <button 
-                    className="btn btn-secondary"
-                    onClick={endGame}
-                    disabled={!gameInProgress}
-                  >
-                    End Game
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
