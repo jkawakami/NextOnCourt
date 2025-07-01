@@ -73,6 +73,9 @@ function App() {
     ? { team1: players.slice(0, 5), team2: players.slice(5, 10) }
     : { team1: [], team2: [] };
 
+  // Determine if the first game has been played
+  const firstGamePlayed = players.some(p => p.gamesPlayed > 0);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -99,6 +102,7 @@ function App() {
                 onMoveUp={movePlayerUp}
                 onMoveDown={movePlayerDown}
                 onReorderPlayers={reorderPlayers}
+                firstGamePlayed={firstGamePlayed}
               />
             </div>
           </div>

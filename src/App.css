@@ -896,3 +896,7 @@ body {
   background: #e9ecef;
   border-radius: 4px;
 }
+
+.player-item.alt-bg {
+  background: #fefefe;
+}

@@ -166,11 +166,14 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
                   const globalIndex = (group.groupNumber - 1) * (players.length >= 20 ? 10 : 5) + index;
                   const isDragging = draggedPlayer?.id === player.id;
                   const isDragOver = dragOverPlayer?.id === player.id;
+                  // Determine if this group of 5 should have a lighter background
+                  const groupOfFive = Math.floor(globalIndex / 5);
+                  const altBg = groupOfFive % 2 === 1;
                   
                   return (
                     <div 
                       key={player.id} 
-                      className={`player-item ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''} ${compactMode !== 'normal' ? compactMode : ''}`}
+                      className={`player-item${altBg ? ' alt-bg' : ''} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''} ${compactMode !== 'normal' ? compactMode : ''}`}
                       draggable
                       onDragStart={(e) => handleDragStart(e, player)}
                       onDragOver={(e) => handleDragOver(e, player)}
@@ -180,7 +183,12 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
                     >
                       <div className="player-info">
                         <span className={`player-number ${compactMode !== 'normal' ? compactMode : ''}`}>{globalIndex + 1}</span>
-                        <span className={`player-name ${compactMode !== 'normal' ? compactMode : ''}`}>{player.name}</span>
+                        <span className={`player-name ${compactMode !== 'normal' ? compactMode : ''}`}>
+                          {player.name}
+                          {player.gamesPlayed === 0 && (
+                            <span title="Hasn't played yet" style={{marginLeft: 4}}>✨</span>
+                          )}
+                        </span>
                       </div>
                       <div className="player-actions">
                         <div className={`drag-handle ${compactMode !== 'normal' ? compactMode : ''}`} title="Drag to reorder">
