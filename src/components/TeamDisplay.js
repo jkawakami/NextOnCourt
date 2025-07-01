@@ -79,18 +79,6 @@ const TeamDisplay = ({ teams, gameInProgress, onNextGame, nextGameDisabled, play
     setIsRunning(false);
   };
 
-  if (!gameInProgress) {
-    return (
-      <div className="team-display">
-        <h3>Current Game</h3>
-        <div className="no-game">
-          <p>No game in progress</p>
-          <p>Add at least 10 players and click "Start Game" to begin</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="team-display">
       {showTimeUp && (

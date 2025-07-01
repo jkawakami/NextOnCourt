@@ -1,8 +1,55 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import PlayerQueue from './components/PlayerQueue';
 import TeamDisplay from './components/TeamDisplay';
 import AddPlayerForm from './components/AddPlayerForm';
+import BasketballPage from './components/BasketballPage';
+import VolleyballPage from './components/VolleyballPage';
+
+function SportHeader() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [open, setOpen] = React.useState(false);
+  const currentSport = location.pathname === '/vball' ? '🏐' : '🏀';
+
+  const handleSelect = (sport) => {
+    setOpen(false);
+    if (sport === '🏀') navigate('/');
+    else if (sport === '🏐') navigate('/vball');
+  };
+
+  React.useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  return (
+    <header className="App-header">
+      <div className="sport-header-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+        <span
+          className="sport-emoji-dropdown"
+          style={{ cursor: 'pointer', fontSize: '2rem', marginRight: 10, userSelect: 'none', verticalAlign: 'middle' }}
+          onClick={e => { e.stopPropagation(); setOpen((o) => !o); }}
+          tabIndex={0}
+        >
+          {currentSport} <span style={{ fontSize: '1.1rem', verticalAlign: 'middle' }}>▼</span>
+        </span>
+        {open && (
+          <div className="sport-emoji-menu" style={{ position: 'absolute', left: 0, top: '110%', background: 'white', border: '1px solid #e1e5e9', borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.18)', zIndex: 9999, minWidth: 80 }}>
+            <button className="sport-emoji-item" style={{ fontSize: '1.5rem', padding: '0.5rem 1.2rem', background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => handleSelect('🏀')}>🏀 Basketball</button>
+            <button className="sport-emoji-item" style={{ fontSize: '1.5rem', padding: '0.5rem 1.2rem', background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => handleSelect('🏐')}>🏐 Volleyball</button>
+          </div>
+        )}
+      </div>
+      <span style={{ fontWeight: 700, fontSize: '1.8rem', verticalAlign: 'middle' }}>Next On Court</span>
+    </header>
+  );
+}
 
 function App() {
   const [players, setPlayers] = useState([]);
@@ -77,38 +124,17 @@ function App() {
   const firstGamePlayed = players.some(p => p.gamesPlayed > 0);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>🏀 Next On Court</h1>
-      </header>
-      
+    <Router>
+      <SportHeader />
       <main className="App-main">
         <div className="container">
-          <div className="top-section">
-            <TeamDisplay 
-              teams={currentTeams}
-              gameInProgress={players.length >= 10}
-              onNextGame={endGame}
-              nextGameDisabled={players.length < 10}
-              players={players}
-            />
-          </div>
-          
-          <div className="bottom-section">
-            <div className="left-panel">
-              <PlayerQueue 
-                players={players}
-                onRemovePlayer={removePlayer}
-                onMoveUp={movePlayerUp}
-                onMoveDown={movePlayerDown}
-                onReorderPlayers={reorderPlayers}
-                firstGamePlayed={firstGamePlayed}
-              />
-            </div>
-          </div>
+          <Routes>
+            <Route path="/" element={<BasketballPage />} />
+            <Route path="/vball" element={<VolleyballPage />} />
+          </Routes>
         </div>
       </main>
-    </div>
+    </Router>
   );
 }
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AddPlayerForm from './AddPlayerForm';
 
-const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers }) => {
+const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers, firstGamePlayed }) => {
   const [draggedPlayer, setDraggedPlayer] = useState(null);
   const [dragOverPlayer, setDragOverPlayer] = useState(null);
   const [playerToRemove, setPlayerToRemove] = useState(null);
@@ -185,7 +185,7 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
                         <span className={`player-number ${compactMode !== 'normal' ? compactMode : ''}`}>{globalIndex + 1}</span>
                         <span className={`player-name ${compactMode !== 'normal' ? compactMode : ''}`}>
                           {player.name}
-                          {player.gamesPlayed === 0 && (
+                          {firstGamePlayed && player.gamesPlayed === 0 && (
                             <span title="Hasn't played yet" style={{marginLeft: 4}}>✨</span>
                           )}
                         </span>

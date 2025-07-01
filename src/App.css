@@ -900,3 +900,56 @@ body {
 .player-item.alt-bg {
   background: #fefefe;
 }
+
+.sport-header-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.sport-emoji-dropdown {
+  cursor: pointer;
+  font-size: 2rem;
+  margin-right: 10px;
+  user-select: none;
+  vertical-align: middle;
+  border-radius: 8px;
+  padding: 0.1rem 0.5rem 0.1rem 0.1rem;
+  transition: background 0.18s;
+}
+.sport-emoji-dropdown:focus, .sport-emoji-dropdown:hover {
+  background: #f0f2f5;
+  outline: none;
+}
+
+.sport-emoji-menu {
+  position: absolute;
+  left: 0;
+  top: 110%;
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  z-index: 9999;
+  min-width: 160px;
+  padding: 0.2rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sport-emoji-item {
+  font-size: 1.5rem;
+  padding: 0.5rem 1.2rem;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: #333;
+  border-radius: 0;
+  transition: background 0.18s, color 0.18s;
+}
+.sport-emoji-item:hover, .sport-emoji-item:focus {
+  background: #f0f2f5;
+  color: #222;
+  outline: none;
+}
