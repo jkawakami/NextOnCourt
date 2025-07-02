@@ -4,6 +4,7 @@ import PlayerQueue from './PlayerQueue';
 
 function VolleyballPage() {
   const [players, setPlayers] = useState([]);
+  const isFirstLoad = React.useRef(true);
 
   // Load players from localStorage on component mount
   useEffect(() => {
@@ -11,10 +12,15 @@ function VolleyballPage() {
     if (savedPlayers) {
       setPlayers(JSON.parse(savedPlayers));
     }
+    console.log('localStorage on mount:', localStorage.getItem('volleyballPlayers'));
   }, []);
 
   // Save players to localStorage whenever players state changes
   useEffect(() => {
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
     localStorage.setItem('volleyballPlayers', JSON.stringify(players));
   }, [players]);
 
@@ -23,7 +29,8 @@ function VolleyballPage() {
       const newPlayer = {
         id: Date.now(),
         name: playerName.trim(),
-        gamesPlayed: 0
+        gamesPlayed: 0,
+        team: null
       };
       setPlayers([...players, newPlayer]);
     }
@@ -52,29 +59,38 @@ function VolleyballPage() {
   };
 
   const endGame = () => {
-    if (players.length >= 10) {
-      const team1Players = players.slice(0, 5);
-      const team2Players = players.slice(5, 10);
-      const rest = players.slice(10);
-      // Update games played for both teams
-      const updatedTeam1Players = team1Players.map(p => ({ ...p, gamesPlayed: p.gamesPlayed + 1 }));
-      const updatedTeam2Players = team2Players.map(p => ({ ...p, gamesPlayed: p.gamesPlayed + 1 }));
-      setPlayers([...updatedTeam2Players, ...rest, ...updatedTeam1Players]);
-    }
+    // Only rotate team1 to the end, but increment gamesPlayed for both teams
+    const team1Players = players.filter(p => p.team === 'team1');
+    const team2Players = players.filter(p => p.team === 'team2');
+    const rest = players.filter(p => p.team !== 'team1' && p.team !== 'team2');
+    if (team1Players.length === 0 && team2Players.length === 0) return;
+    const updatedTeam1 = team1Players.map(p => ({ ...p, gamesPlayed: p.gamesPlayed + 1 }));
+    const updatedTeam2 = team2Players.map(p => ({ ...p, gamesPlayed: p.gamesPlayed + 1 }));
+    setPlayers([...updatedTeam2, ...rest, ...updatedTeam1]);
   };
 
   const reorderPlayers = (newPlayers) => {
     setPlayers(newPlayers);
   };
 
-  // Always compute current teams from the first 10 players, even if fewer than 10
+  // Handler to assign a player to a team
+  const assignPlayerTeam = (playerId, team) => {
+    setPlayers(players => players.map(p => p.id === playerId ? { ...p, team } : p));
+  };
+
+  // Compute teams based on player.team
   const currentTeams = {
-    team1: players.slice(0, 5),
-    team2: players.slice(5, 10)
+    team1: players.filter(p => p.team === 'team1'),
+    team2: players.filter(p => p.team === 'team2')
   };
 
   // Determine if the first game has been played
   const firstGamePlayed = players.some(p => p.gamesPlayed > 0);
+
+  const resetQueue = () => {
+    setPlayers([]);
+    localStorage.removeItem('volleyballPlayers');
+  };
 
   return (
     <>
@@ -83,7 +99,7 @@ function VolleyballPage() {
           teams={currentTeams}
           gameInProgress={true}
           onNextGame={endGame}
-          nextGameDisabled={players.length < 10}
+          nextGameDisabled={currentTeams.team1.length < 1 || currentTeams.team2.length < 1}
           players={players}
         />
       </div>
@@ -95,7 +111,9 @@ function VolleyballPage() {
             onMoveUp={movePlayerUp}
             onMoveDown={movePlayerDown}
             onReorderPlayers={reorderPlayers}
+            onAssignTeam={assignPlayerTeam}
             firstGamePlayed={firstGamePlayed}
+            onResetQueue={resetQueue}
           />
         </div>
       </div>

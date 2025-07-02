@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TeamDisplay from './TeamDisplay';
 import PlayerQueue from './PlayerQueue';
 
 function BasketballPage() {
   const [players, setPlayers] = useState([]);
+  const isFirstLoad = useRef(true);
 
   // Load players from localStorage on component mount
   useEffect(() => {
@@ -13,8 +14,12 @@ function BasketballPage() {
     }
   }, []);
 
-  // Save players to localStorage whenever players state changes
+  // Save players to localStorage whenever players state changes, but skip first load
   useEffect(() => {
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
     localStorage.setItem('basketballPlayers', JSON.stringify(players));
   }, [players]);
 
@@ -67,6 +72,11 @@ function BasketballPage() {
     setPlayers(newPlayers);
   };
 
+  const resetQueue = () => {
+    setPlayers([]);
+    localStorage.removeItem('basketballPlayers');
+  };
+
   // Always compute current teams from the first 10 players, even if fewer than 10
   const currentTeams = {
     team1: players.slice(0, 5),
@@ -96,6 +106,7 @@ function BasketballPage() {
             onMoveDown={movePlayerDown}
             onReorderPlayers={reorderPlayers}
             firstGamePlayed={firstGamePlayed}
+            onResetQueue={resetQueue}
           />
         </div>
       </div>

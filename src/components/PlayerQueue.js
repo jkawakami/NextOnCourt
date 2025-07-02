@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AddPlayerForm from './AddPlayerForm';
 
-const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers, firstGamePlayed }) => {
+const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers, firstGamePlayed, onAssignTeam, onResetQueue }) => {
   const [draggedPlayer, setDraggedPlayer] = useState(null);
   const [dragOverPlayer, setDragOverPlayer] = useState(null);
   const [playerToRemove, setPlayerToRemove] = useState(null);
@@ -10,6 +10,7 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
   const [editName, setEditName] = useState('');
   const menuRefs = useRef({});
   const addPlayerInputRef = useRef(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     if (menuOpen !== null) {
@@ -137,7 +138,18 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
 
   return (
     <div className="player-queue">
-      <h3 className="player-queue-title">Player Queue</h3>
+      <div className="player-queue-title-row" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+        <h3 className="player-queue-title">Player Queue</h3>
+        {typeof onResetQueue === 'function' && (
+          <button
+            className="btn btn-danger btn-small"
+            style={{marginLeft: 'auto', minWidth: 80}}
+            onClick={() => setShowResetConfirm(true)}
+          >
+            Reset
+          </button>
+        )}
+      </div>
       <div className={`queue-list${compactMode !== 'normal' ? ' ' + compactMode : ''}${menuOpen !== null ? ' menu-active' : ''}`}>
         {players.length === 0 ? (
           <div className="player-group">
@@ -187,6 +199,18 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
                           {player.name}
                           {firstGamePlayed && player.gamesPlayed === 0 && (
                             <span title="Hasn't played yet" style={{marginLeft: 4}}>✨</span>
+                          )}
+                          {/* Team assignment dropdown for volleyball page */}
+                          {typeof onAssignTeam === 'function' && (
+                            <select
+                              value={player.team || ''}
+                              onChange={e => onAssignTeam(player.id, e.target.value || null)}
+                              style={{ marginLeft: 8, fontSize: '0.95em', borderRadius: 4, border: '1.5px solid #e1e5e9', padding: '0.15em 0.5em' }}
+                            >
+                              <option value="">No Team</option>
+                              <option value="team1">Team 1</option>
+                              <option value="team2">Team 2</option>
+                            </select>
                           )}
                         </span>
                       </div>
@@ -291,6 +315,23 @@ const PlayerQueue = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderP
               </button>
               <button className="btn btn-danger" onClick={confirmRemove}>
                 Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Reset Confirmation Popup */}
+      {showResetConfirm && (
+        <div className="confirmation-overlay">
+          <div className="confirmation-popup">
+            <h4>Reset Player Queue</h4>
+            <p>Are you sure you want to remove <strong>all players</strong> from the queue?</p>
+            <div className="confirmation-actions">
+              <button className="btn btn-secondary" onClick={() => setShowResetConfirm(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-danger" onClick={() => { setShowResetConfirm(false); if (onResetQueue) onResetQueue(); }}>
+                Reset
               </button>
             </div>
           </div>
