@@ -160,7 +160,17 @@ const PlayerQueueVolleyball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
           </button>
         )}
       </div>
-      <div className={`queue-list${compactMode !== 'normal' ? ' ' + compactMode : ''}${menuOpen !== null ? ' menu-active' : ''}`}> 
+      <div 
+        className={`queue-list${compactMode !== 'normal' ? ' ' + compactMode : ''}${menuOpen !== null ? ' menu-active' : ''}`}
+        onDragOver={e => { e.preventDefault(); }}
+        onDrop={e => {
+          e.preventDefault();
+          const playerId = e.dataTransfer.getData('playerId');
+          if (playerId && typeof onAssignTeam === 'function') {
+            onAssignTeam(Number(playerId), null);
+          }
+        }}
+      > 
         {(() => {
           const filteredPlayers = showAllPlayers ? players : players.filter(p => !p.team);
           if (filteredPlayers.length === 0) {
@@ -202,7 +212,11 @@ const PlayerQueueVolleyball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
                       key={player.id} 
                       className={`player-item${altBg ? ' alt-bg' : ''} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''} ${compactMode !== 'normal' ? compactMode : ''}`}
                       draggable
-                      onDragStart={(e) => handleDragStart(e, player)}
+                      onDragStart={e => {
+                        handleDragStart(e, player);
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('playerId', player.id);
+                      }}
                       onDragOver={(e) => handleDragOver(e, player)}
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => handleDrop(e, player)}

@@ -91,6 +91,11 @@ function VolleyballPage() {
     setPlayers(players => players.map(p => p.id === playerId ? { ...p, team } : p));
   };
 
+  // Handler for drag-and-drop from queue to team
+  const handleDropPlayerToTeam = (playerId, teamKey) => {
+    assignPlayerTeam(Number(playerId), teamKey);
+  };
+
   // Compute teams dynamically
   const currentTeams = {};
   for (let i = 1; i <= teamCount; i++) {
@@ -222,6 +227,7 @@ function VolleyballPage() {
           teamNames={teamNames}
           setTeamName={setTeamName}
           removeTeamByKey={removeTeamByKey}
+          onDropPlayerToTeam={handleDropPlayerToTeam}
           gameInProgress={true}
           onNextGame={endGame}
           nextGameDisabled={Object.values(currentTeams).some(team => team.length < 1)}
