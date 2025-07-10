@@ -6,7 +6,7 @@ const formatTime = (seconds) => {
   return `${m}:${s}`;
 };
 
-const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisabled, players }) => {
+const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisabled, players, teamCount, teamNames, setTeamName, removeTeamByKey }) => {
   // Timer state
   const [duration, setDuration] = useState(420); // 7 minutes default
   const [timeLeft, setTimeLeft] = useState(420);
@@ -14,6 +14,8 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
   const [editMode, setEditMode] = useState(false);
   const timerRef = useRef(null);
   const [showTimeUp, setShowTimeUp] = useState(false);
+  const [editingTeam, setEditingTeam] = useState(null);
+  const [editValue, setEditValue] = useState('');
 
   React.useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -155,95 +157,58 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
           </div>
         )}
       </div>
-      <div className="teams-container" style={teams.team3 && teams.team4 ? {display: 'flex', gap: '2.5vw', justifyContent: 'center', alignItems: 'flex-start', width: '100%', maxWidth: '100vw'} : {}}>
-        {teams.team3 && teams.team4 ? (
-          <>
-            {/* Left Court: Team 1 (top), Team 2 (bottom) */}
-            <div style={{position: 'relative', flex: 1, maxWidth: '48vw', minWidth: 340, height: '38vw', maxHeight: 420, background: 'url(/volleyball-court.jpeg) center/contain no-repeat', borderRadius: 16, boxShadow: '0 2px 16px rgba(0,0,0,0.10)'}}>
-              {/* Team 1 (top) */}
-              <div style={{position: 'absolute', top: 24, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 2}}>
-                <div className="team team1" style={{background: 'rgba(255,255,255,0.92)', border: '2px solid #38a169', borderRadius: 10, padding: '0.5rem 1.2rem', minWidth: 120}}>
-                  <h4 style={{textAlign: 'center'}}>Team 1</h4>
-                  <div className="team-players vertical" style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center'}}>
-                    {teams.team1.map((player) => (
-                      <div key={player.id} className="team-player" style={{background: '#f8f9fa', borderRadius: 6, padding: '0.5rem 1.2rem', fontWeight: 600, fontSize: '1.1rem', minWidth: 60, textAlign: 'center', border: '1.5px solid #38a169', width: '100%'}}>
-                        <span className="player-name">{player.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+      <div className="teams-container" style={{display: 'flex', flexWrap: 'wrap', gap: '2.5vw', justifyContent: 'center', alignItems: 'flex-start', width: '100%', maxWidth: '100vw'}}>
+        {Array.from({ length: teamCount }).map((_, i) => {
+          const teamKey = `team${i + 1}`;
+          const borderColors = ['#38a169', '#e53e3e', '#3182ce', '#d69e2e', '#805ad5', '#319795', '#ed8936', '#718096'];
+          const borderColor = borderColors[i % borderColors.length];
+          return (
+            <div key={teamKey} className={`team ${teamKey}`} style={{background: 'rgba(255,255,255,0.92)', border: `2px solid ${borderColor}`, borderRadius: 10, padding: '0.5rem 1.2rem', minWidth: 120, flex: '1 1 300px', maxWidth: 350}}>
+              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 4}}>
+                {editingTeam === teamKey ? (
+                  <form onSubmit={e => { e.preventDefault(); setTeamName(teamKey, editValue.trim() || teamNames[teamKey]); setEditingTeam(null); }} style={{display: 'flex', alignItems: 'center', gap: 4}}>
+                    <input
+                      type="text"
+                      value={editValue}
+                      onChange={e => setEditValue(e.target.value)}
+                      style={{ fontSize: '1.1rem', fontWeight: 600, borderRadius: 6, border: `1.5px solid ${borderColor}`, padding: '2px 8px', minWidth: 60 }}
+                      maxLength={30}
+                      autoFocus
+                    />
+                    <button type="submit" style={{ background: borderColor, color: '#fff', border: 'none', borderRadius: 4, padding: '2px 10px', fontWeight: 600, fontSize: '1rem', marginLeft: 2 }}>Save</button>
+                    <button type="button" style={{ background: '#eee', color: '#444', border: 'none', borderRadius: 4, padding: '2px 10px', fontWeight: 600, fontSize: '1rem', marginLeft: 2 }} onClick={() => setEditingTeam(null)}>Cancel</button>
+                  </form>
+                ) : (
+                  <>
+                    <h4 style={{textAlign: 'center', margin: 0}}>{teamNames[teamKey] || `Team ${i + 1}`}</h4>
+                    <button
+                      style={{ marginLeft: 6, background: 'none', border: 'none', color: borderColor, fontSize: '1.1rem', cursor: 'pointer', padding: 0 }}
+                      title="Edit team name"
+                      onClick={() => { setEditingTeam(teamKey); setEditValue(teamNames[teamKey] || `Team ${i + 1}`); }}
+                    >
+                      ✎
+                    </button>
+                    <button
+                      style={{ marginLeft: 6, background: 'none', border: 'none', color: '#e53e3e', fontSize: '1.1rem', cursor: teamCount <= 1 ? 'not-allowed' : 'pointer', padding: 0, opacity: teamCount <= 1 ? 0.5 : 1 }}
+                      title="Delete team"
+                      onClick={() => removeTeamByKey(teamKey)}
+                      disabled={teamCount <= 1}
+                    >
+                      🗑️
+                    </button>
+                  </>
+                )}
               </div>
-              {/* Team 2 (bottom) */}
-              <div style={{position: 'absolute', bottom: 24, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 2}}>
-                <div className="team team2" style={{background: 'rgba(255,255,255,0.92)', border: '2px solid #e53e3e', borderRadius: 10, padding: '0.5rem 1.2rem', minWidth: 120}}>
-                  <h4 style={{textAlign: 'center'}}>Team 2</h4>
-                  <div className="team-players vertical" style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center'}}>
-                    {teams.team2.map((player) => (
-                      <div key={player.id} className="team-player" style={{background: '#f8f9fa', borderRadius: 6, padding: '0.5rem 1.2rem', fontWeight: 600, fontSize: '1.1rem', minWidth: 60, textAlign: 'center', border: '1.5px solid #e53e3e', width: '100%'}}>
-                        <span className="player-name">{player.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Right Court: Team 3 (top), Team 4 (bottom) */}
-            <div style={{position: 'relative', flex: 1, maxWidth: '48vw', minWidth: 340, height: '38vw', maxHeight: 420, background: 'url(/volleyball-court.jpeg) center/contain no-repeat', borderRadius: 16, boxShadow: '0 2px 16px rgba(0,0,0,0.10)'}}>
-              {/* Team 3 (top) */}
-              <div style={{position: 'absolute', top: 24, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 2}}>
-                <div className="team team3" style={{background: 'rgba(255,255,255,0.92)', border: '2px solid #3182ce', borderRadius: 10, padding: '0.5rem 1.2rem', minWidth: 120}}>
-                  <h4 style={{textAlign: 'center'}}>Team 3</h4>
-                  <div className="team-players vertical" style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center'}}>
-                    {teams.team3.map((player) => (
-                      <div key={player.id} className="team-player" style={{background: '#f8f9fa', borderRadius: 6, padding: '0.5rem 1.2rem', fontWeight: 600, fontSize: '1.1rem', minWidth: 60, textAlign: 'center', border: '1.5px solid #3182ce', width: '100%'}}>
-                        <span className="player-name">{player.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              {/* Team 4 (bottom) */}
-              <div style={{position: 'absolute', bottom: 24, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 2}}>
-                <div className="team team4" style={{background: 'rgba(255,255,255,0.92)', border: '2px solid #d69e2e', borderRadius: 10, padding: '0.5rem 1.2rem', minWidth: 120}}>
-                  <h4 style={{textAlign: 'center'}}>Team 4</h4>
-                  <div className="team-players vertical" style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center'}}>
-                    {teams.team4.map((player) => (
-                      <div key={player.id} className="team-player" style={{background: '#f8f9fa', borderRadius: 6, padding: '0.5rem 1.2rem', fontWeight: 600, fontSize: '1.1rem', minWidth: 60, textAlign: 'center', border: '1.5px solid #d69e2e', width: '100%'}}>
-                        <span className="player-name">{player.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="team team1">
-              <h4>Team 1</h4>
-              <div className="team-players horizontal">
-                {teams.team1.map((player) => (
-                  <div key={player.id} className="team-player">
+              <div className="team-players vertical" style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center'}}>
+                {teams[teamKey].map((player) => (
+                  <div key={player.id} className="team-player" style={{background: '#f8f9fa', borderRadius: 6, padding: '0.5rem 1.2rem', fontWeight: 600, fontSize: '1.1rem', minWidth: 60, textAlign: 'center', border: `1.5px solid ${borderColor}`, width: '100%'}}>
                     <span className="player-name">{player.name}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="vs-divider">
-              <span>VS</span>
-            </div>
-            <div className="team team2">
-              <h4>Team 2</h4>
-              <div className="team-players horizontal">
-                {teams.team2.map((player) => (
-                  <div key={player.id} className="team-player">
-                    <span className="player-name">{player.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
+          );
+        })}
       </div>
     </div>
   );

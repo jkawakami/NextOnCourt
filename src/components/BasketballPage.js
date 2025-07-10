@@ -5,6 +5,7 @@ import PlayerQueueBasketball from './PlayerQueueBasketball';
 function BasketballPage() {
   const [players, setPlayers] = useState([]);
   const isFirstLoad = useRef(true);
+  const [addError, setAddError] = useState('');
 
   // Load players from localStorage on component mount
   useEffect(() => {
@@ -24,14 +25,19 @@ function BasketballPage() {
   }, [players]);
 
   const addPlayer = (playerName) => {
-    if (playerName.trim() && !players.find(p => p.name.toLowerCase() === playerName.toLowerCase())) {
-      const newPlayer = {
-        id: Date.now(),
-        name: playerName.trim(),
-        gamesPlayed: 0
-      };
-      setPlayers([...players, newPlayer]);
+    if (!playerName.trim()) return;
+    if (players.find(p => p.name.toLowerCase() === playerName.trim().toLowerCase())) {
+      setAddError('Player names must be unique.');
+      setTimeout(() => setAddError(''), 2500);
+      return;
     }
+    const newPlayer = {
+      id: Date.now(),
+      name: playerName.trim(),
+      gamesPlayed: 0
+    };
+    setPlayers([...players, newPlayer]);
+    setAddError('');
   };
 
   const removePlayer = (playerId) => {
@@ -99,6 +105,9 @@ function BasketballPage() {
       </div>
       <div className="bottom-section">
         <div className="left-panel">
+          {addError && (
+            <div style={{ color: 'red', marginBottom: 8, fontWeight: 500 }}>{addError}</div>
+          )}
           <PlayerQueueBasketball 
             players={players}
             onRemovePlayer={removePlayer}
@@ -107,6 +116,8 @@ function BasketballPage() {
             onReorderPlayers={reorderPlayers}
             firstGamePlayed={firstGamePlayed}
             onResetQueue={resetQueue}
+            showAddPlayerNextToTitle
+            onAddPlayer={addPlayer}
           />
         </div>
       </div>

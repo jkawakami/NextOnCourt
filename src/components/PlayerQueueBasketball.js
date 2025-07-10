@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AddPlayerForm from './AddPlayerForm';
 
-const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers, firstGamePlayed, onResetQueue }) => {
+const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers, firstGamePlayed, onResetQueue, showAddPlayerNextToTitle, onAddPlayer }) => {
   const [draggedPlayer, setDraggedPlayer] = useState(null);
   const [dragOverPlayer, setDragOverPlayer] = useState(null);
   const [playerToRemove, setPlayerToRemove] = useState(null);
@@ -117,12 +117,28 @@ const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
 
   return (
     <div className="player-queue">
-      <div className="player-queue-title-row" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-        <h3 className="player-queue-title">Player Queue</h3>
-        {typeof onResetQueue === 'function' && (
+      <div className="player-queue-title-row" style={{display: 'flex', alignItems: 'center', justifyContent: showAddPlayerNextToTitle ? 'center' : 'space-between', gap: showAddPlayerNextToTitle ? 16 : 0}}>
+        <h3 className="player-queue-title" style={{marginRight: showAddPlayerNextToTitle ? 12 : 0}}>Player Queue</h3>
+        {showAddPlayerNextToTitle && (
+          <AddPlayerForm
+            minimal
+            ref={addPlayerInputRef}
+            onAddPlayer={onAddPlayer}
+          />
+        )}
+        {typeof onResetQueue === 'function' && !showAddPlayerNextToTitle && (
           <button
             className="btn btn-danger btn-small"
             style={{marginLeft: 'auto', minWidth: 80}}
+            onClick={() => setShowResetConfirm(true)}
+          >
+            Reset
+          </button>
+        )}
+        {typeof onResetQueue === 'function' && showAddPlayerNextToTitle && (
+          <button
+            className="btn btn-danger btn-small"
+            style={{marginLeft: 12, minWidth: 80}}
             onClick={() => setShowResetConfirm(true)}
           >
             Reset
@@ -133,20 +149,22 @@ const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
         {players.length === 0 ? (
           <div className="player-group">
             <div className="player-group-items">
-              <div
-                className="player-item add-player-item"
-                style={{ cursor: 'text' }}
-                draggable={false}
-                onClick={() => {
-                  if (addPlayerInputRef.current) addPlayerInputRef.current.focus();
-                }}
-              >
-                <AddPlayerForm
-                  minimal
-                  ref={addPlayerInputRef}
-                  onAddPlayer={onReorderPlayers ? (name) => onReorderPlayers([...players, { id: Date.now(), name, gamesPlayed: 0 }]) : () => {}}
-                />
-              </div>
+              {!showAddPlayerNextToTitle && (
+                <div
+                  className="player-item add-player-item"
+                  style={{ cursor: 'text' }}
+                  draggable={false}
+                  onClick={() => {
+                    if (addPlayerInputRef.current) addPlayerInputRef.current.focus();
+                  }}
+                >
+                  <AddPlayerForm
+                    minimal
+                    ref={addPlayerInputRef}
+                    onAddPlayer={onReorderPlayers ? (name) => onReorderPlayers([...players, { id: Date.now(), name, gamesPlayed: 0 }]) : () => {}}
+                  />
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -240,8 +258,8 @@ const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
                     </div>
                   );
                 })}
-                {/* If this is the last group, render AddPlayerForm as a player-item */}
-                {groupIdx === playerGroups.length - 1 && (
+                {/* If this is the last group, render AddPlayerForm as a player-item, unless showAddPlayerNextToTitle is true */}
+                {groupIdx === playerGroups.length - 1 && !showAddPlayerNextToTitle && (
                   <div
                     className="player-item add-player-item"
                     style={{ cursor: 'text' }}

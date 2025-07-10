@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AddPlayerForm from './AddPlayerForm';
 
-const PlayerQueueVolleyball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers, firstGamePlayed, onAssignTeam, onResetQueue, showAddPlayerNextToTitle, onAddPlayer }) => {
+const PlayerQueueVolleyball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers, firstGamePlayed, onAssignTeam, onResetQueue, showAddPlayerNextToTitle, onAddPlayer, teamCount, teamNames }) => {
   const [draggedPlayer, setDraggedPlayer] = useState(null);
   const [dragOverPlayer, setDragOverPlayer] = useState(null);
   const [playerToRemove, setPlayerToRemove] = useState(null);
@@ -190,7 +190,19 @@ const PlayerQueueVolleyball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
                     >
                       <div className="player-info">
                         <span className={`player-number ${compactMode !== 'normal' ? compactMode : ''}`}>{globalIndex + 1}</span>
-                        <span className={`player-name ${compactMode !== 'normal' ? compactMode : ''}`}>{player.name}{firstGamePlayed && player.gamesPlayed === 0 && (<span title="Hasn't played yet" style={{marginLeft: 4}}>✨</span>)}{typeof onAssignTeam === 'function' && (<select value={player.team || ''} onChange={e => onAssignTeam(player.id, e.target.value || null)} style={{ marginLeft: 8, fontSize: '0.95em', borderRadius: 4, border: '1.5px solid #e1e5e9', padding: '0.15em 0.5em' }}><option value="">No Team</option><option value="team1">Team 1</option><option value="team2">Team 2</option><option value="team3">Team 3</option><option value="team4">Team 4</option></select>)}</span>
+                        <span className={`player-name ${compactMode !== 'normal' ? compactMode : ''}`}>{player.name}{firstGamePlayed && player.gamesPlayed === 0 && (<span title="Hasn't played yet" style={{marginLeft: 4}}>✨</span>)}{typeof onAssignTeam === 'function' && (
+                          <select
+                            value={player.team || ''}
+                            onChange={e => onAssignTeam(player.id, e.target.value || null)}
+                            style={{ marginLeft: 8, fontSize: '0.95em', borderRadius: 4, border: '1.5px solid #e1e5e9', padding: '0.15em 0.5em' }}
+                          >
+                            <option value="">No Team</option>
+                            {Array.from({ length: teamCount }).map((_, i) => {
+                              const teamKey = `team${i+1}`;
+                              return <option key={teamKey} value={teamKey}>{teamNames[teamKey] || `Team ${i+1}`}</option>;
+                            })}
+                          </select>
+                        )}</span>
                       </div>
                       <div className="player-actions">
                         <div className={`drag-handle ${compactMode !== 'normal' ? compactMode : ''}`} title="Drag to reorder">
