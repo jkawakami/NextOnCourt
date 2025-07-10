@@ -11,6 +11,7 @@ const PlayerQueueVolleyball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
   const menuRefs = useRef({});
   const addPlayerInputRef = useRef(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showAllPlayers, setShowAllPlayers] = useState(false);
 
   useEffect(() => {
     if (menuOpen !== null) {
@@ -120,13 +121,36 @@ const PlayerQueueVolleyball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
       <div className="player-queue-title-row" style={{display: 'flex', alignItems: 'center', justifyContent: showAddPlayerNextToTitle ? 'center' : 'space-between', gap: showAddPlayerNextToTitle ? 16 : 0}}>
         <h3 className="player-queue-title" style={{marginRight: showAddPlayerNextToTitle ? 12 : 0}}>Player Queue</h3>
         {showAddPlayerNextToTitle && (
-          <AddPlayerForm
-            minimal
-            ref={addPlayerInputRef}
-            onAddPlayer={onAddPlayer}
-          />
+          <>
+            <AddPlayerForm
+              minimal
+              ref={addPlayerInputRef}
+              onAddPlayer={onAddPlayer}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', marginLeft: 12, gap: 16 }}>
+              <input
+                type="checkbox"
+                id="show-all-players"
+                checked={showAllPlayers}
+                onChange={e => setShowAllPlayers(e.target.checked)}
+                style={{ marginRight: 6 }}
+              />
+              <label htmlFor="show-all-players" style={{ fontSize: '1rem', userSelect: 'none', cursor: 'pointer', marginRight: 18 }}>
+                Show all players
+              </label>
+              {typeof onResetQueue === 'function' && (
+                <button
+                  className="btn btn-danger btn-small"
+                  style={{marginLeft: 18, minWidth: 80}}
+                  onClick={() => setShowResetConfirm(true)}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </>
         )}
-        {typeof onResetQueue === 'function' && !showAddPlayerNextToTitle && (
+        {!showAddPlayerNextToTitle && typeof onResetQueue === 'function' && (
           <button
             className="btn btn-danger btn-small"
             style={{marginLeft: 'auto', minWidth: 80}}
@@ -135,40 +159,36 @@ const PlayerQueueVolleyball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
             Reset
           </button>
         )}
-        {typeof onResetQueue === 'function' && showAddPlayerNextToTitle && (
-          <button
-            className="btn btn-danger btn-small"
-            style={{marginLeft: 12, minWidth: 80}}
-            onClick={() => setShowResetConfirm(true)}
-          >
-            Reset
-          </button>
-        )}
       </div>
       <div className={`queue-list${compactMode !== 'normal' ? ' ' + compactMode : ''}${menuOpen !== null ? ' menu-active' : ''}`}> 
-        {players.length === 0 ? (
-          <div className="player-group">
-            <div className="player-group-items">
-              {!showAddPlayerNextToTitle && (
-                <div
-                  className="player-item add-player-item"
-                  style={{ cursor: 'text' }}
-                  draggable={false}
-                  onClick={() => {
-                    if (addPlayerInputRef.current) addPlayerInputRef.current.focus();
-                  }}
-                >
-                  <AddPlayerForm
-                    minimal
-                    ref={addPlayerInputRef}
-                    onAddPlayer={onReorderPlayers ? (name) => onReorderPlayers([...players, { id: Date.now(), name, gamesPlayed: 0 }]) : () => {}}
-                  />
+        {(() => {
+          const filteredPlayers = showAllPlayers ? players : players.filter(p => !p.team);
+          if (filteredPlayers.length === 0) {
+            return (
+              <div className="player-group">
+                <div className="player-group-items">
+                  {!showAddPlayerNextToTitle && (
+                    <div
+                      className="player-item add-player-item"
+                      style={{ cursor: 'text' }}
+                      draggable={false}
+                      onClick={() => {
+                        if (addPlayerInputRef.current) addPlayerInputRef.current.focus();
+                      }}
+                    >
+                      <AddPlayerForm
+                        minimal
+                        ref={addPlayerInputRef}
+                        onAddPlayer={onReorderPlayers ? (name) => onReorderPlayers([...players, { id: Date.now(), name, gamesPlayed: 0 }]) : () => {}}
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          playerGroups.map((group, groupIdx) => (
+              </div>
+            );
+          }
+          const playerGroups = groupPlayers(filteredPlayers);
+          return playerGroups.map((group, groupIdx) => (
             <div key={group.groupNumber} className="player-group">
               <div className="player-group-items">
                 {group.players.map((player, index) => {
@@ -289,8 +309,8 @@ const PlayerQueueVolleyball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
                 )}
               </div>
             </div>
-          ))
-        )}
+          ));
+        })()}
       </div>
       {/* Confirmation Popup */}
       {playerToRemove && (
