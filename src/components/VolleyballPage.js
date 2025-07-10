@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TeamDisplayVolleyball from './TeamDisplayVolleyball';
 import PlayerQueueVolleyball from './PlayerQueueVolleyball';
 
@@ -7,9 +7,11 @@ function VolleyballPage() {
   const isFirstLoad = React.useRef(true);
   const [addError, setAddError] = useState('');
   const [teamCount, setTeamCount] = useState(4);
+  const [teamOrder, setTeamOrder] = useState(['team1', 'team2', 'team3', 'team4']);
   const [teamNames, setTeamNames] = useState({ team1: 'Team 1', team2: 'Team 2', team3: 'Team 3', team4: 'Team 4' });
   const [removeTeamDropdownOpen, setRemoveTeamDropdownOpen] = useState(false);
   const [teamToRemove, setTeamToRemove] = useState('');
+  const removeTeamDropdownRef = useRef(null);
 
   // Load players from localStorage on component mount
   useEffect(() => {
@@ -28,6 +30,23 @@ function VolleyballPage() {
     }
     localStorage.setItem('volleyballPlayers', JSON.stringify(players));
   }, [players]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (removeTeamDropdownRef.current && !removeTeamDropdownRef.current.contains(event.target)) {
+        setRemoveTeamDropdownOpen(false);
+      }
+    };
+
+    if (removeTeamDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [removeTeamDropdownOpen]);
 
   const addPlayer = (playerName) => {
     if (!playerName.trim()) return;
@@ -96,6 +115,16 @@ function VolleyballPage() {
     assignPlayerTeam(Number(playerId), teamKey);
   };
 
+  // Handler for reordering teams
+  const handleReorderTeams = (newOrder) => {
+    setTeamOrder(newOrder);
+    const newTeamNames = {};
+    newOrder.forEach((teamKey, index) => {
+      newTeamNames[teamKey] = teamNames[teamKey] || `Team ${index + 1}`;
+    });
+    setTeamNames(newTeamNames);
+  };
+
   // Compute teams dynamically
   const currentTeams = {};
   for (let i = 1; i <= teamCount; i++) {
@@ -112,8 +141,9 @@ function VolleyballPage() {
 
   const handleAddTeam = () => {
     setTeamCount((count) => count + 1);
+    const newKey = `team${teamCount + 1}`;
+    setTeamOrder(order => [...order, newKey]);
     setTeamNames(names => {
-      const newKey = `team${teamCount + 1}`;
       return { ...names, [newKey]: `Team ${teamCount + 1}` };
     });
   };
@@ -123,6 +153,7 @@ function VolleyballPage() {
     if (teamCount <= 1) return;
     setPlayers(players => players.map(p => p.team === teamKey ? { ...p, team: null } : p));
     setTeamCount(count => count - 1);
+    setTeamOrder(order => order.filter(key => key !== teamKey));
     setTeamNames(names => {
       const updated = { ...names };
       delete updated[teamKey];
@@ -177,6 +208,7 @@ function VolleyballPage() {
               Remove Team
             </button>
             {removeTeamDropdownOpen && (
+              <div ref={removeTeamDropdownRef}>
               <div style={{
                 position: 'absolute',
                 top: '110%',
@@ -195,8 +227,8 @@ function VolleyballPage() {
                   style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1.5px solid #e2e8f0', marginBottom: 10 }}
                 >
                   <option value="">Select Team</option>
-                  {Array.from({ length: teamCount }).map((_, i) => (
-                    <option key={`team${i+1}`} value={`team${i+1}`}>{`Team ${i+1}`}</option>
+                  {teamOrder.map((teamKey) => (
+                    <option key={teamKey} value={teamKey}>{teamNames[teamKey] || teamKey}</option>
                   ))}
                 </select>
                 <button
@@ -218,16 +250,19 @@ function VolleyballPage() {
                   Confirm Remove
                 </button>
               </div>
+              </div>
             )}
           </div>
         </div>
         <TeamDisplayVolleyball 
           teams={currentTeams}
           teamCount={teamCount}
+          teamOrder={teamOrder}
           teamNames={teamNames}
           setTeamName={setTeamName}
           removeTeamByKey={removeTeamByKey}
           onDropPlayerToTeam={handleDropPlayerToTeam}
+          onReorderTeams={handleReorderTeams}
           gameInProgress={true}
           onNextGame={endGame}
           nextGameDisabled={Object.values(currentTeams).some(team => team.length < 1)}

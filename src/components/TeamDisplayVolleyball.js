@@ -6,7 +6,7 @@ const formatTime = (seconds) => {
   return `${m}:${s}`;
 };
 
-const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisabled, players, teamCount, teamNames, setTeamName, removeTeamByKey, onDropPlayerToTeam }) => {
+const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisabled, players, teamCount, teamOrder, teamNames, setTeamName, removeTeamByKey, onDropPlayerToTeam, onReorderTeams }) => {
   // Timer state
   const [duration, setDuration] = useState(420); // 7 minutes default
   const [timeLeft, setTimeLeft] = useState(420);
@@ -17,6 +17,7 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
   const [editingTeam, setEditingTeam] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [dragOverTeam, setDragOverTeam] = useState(null);
+  const [draggedTeam, setDraggedTeam] = useState(null);
 
   React.useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -159,11 +160,11 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
         )}
       </div>
       <div className="teams-container" style={{display: 'flex', flexWrap: 'wrap', gap: '2.5vw', justifyContent: 'center', alignItems: 'flex-start', width: '100%', maxWidth: '100vw'}}>
-        {Array.from({ length: teamCount }).map((_, i) => {
-          const teamKey = `team${i + 1}`;
+        {teamOrder.map((teamKey, i) => {
           const borderColors = ['#38a169', '#e53e3e', '#3182ce', '#d69e2e', '#805ad5', '#319795', '#ed8936', '#718096'];
           const borderColor = borderColors[i % borderColors.length];
           const isDragOver = dragOverTeam === teamKey;
+          const isDragging = draggedTeam === teamKey;
           return (
             <div
               key={teamKey}
@@ -178,16 +179,43 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
                 maxWidth: 350,
                 boxShadow: isDragOver ? `0 0 0 3px ${borderColor}55` : undefined,
                 transition: 'background 0.15s, box-shadow 0.15s',
+                opacity: isDragging ? 0.5 : 1,
+                cursor: 'grab',
               }}
-              onDragOver={e => { e.preventDefault(); setDragOverTeam(teamKey); }}
+              draggable
+              onDragStart={e => {
+                setDraggedTeam(teamKey);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('teamKey', teamKey);
+              }}
+              onDragEnd={() => setDraggedTeam(null)}
+              onDragOver={e => { 
+                e.preventDefault(); 
+                const dataType = e.dataTransfer.types[0];
+                if (dataType === 'teamKey') {
+                  setDragOverTeam(teamKey);
+                } else if (dataType === 'playerId') {
+                  setDragOverTeam(teamKey);
+                }
+              }}
               onDragLeave={e => { setDragOverTeam(null); }}
               onDrop={e => {
                 e.preventDefault();
                 setDragOverTeam(null);
+                const teamKeyDropped = e.dataTransfer.getData('teamKey');
                 const playerId = e.dataTransfer.getData('playerId');
-                if (playerId && typeof window.onDropPlayerToTeam === 'function') {
-                  window.onDropPlayerToTeam(playerId, teamKey);
+                
+                if (teamKeyDropped && teamKeyDropped !== teamKey && typeof onReorderTeams === 'function') {
+                  // Reorder teams
+                  const currentOrder = teamOrder;
+                  const fromIndex = currentOrder.indexOf(teamKeyDropped);
+                  const toIndex = currentOrder.indexOf(teamKey);
+                  const newOrder = [...currentOrder];
+                  const [movedTeam] = newOrder.splice(fromIndex, 1);
+                  newOrder.splice(toIndex, 0, movedTeam);
+                  onReorderTeams(newOrder);
                 } else if (playerId && typeof onDropPlayerToTeam === 'function') {
+                  // Assign player to team
                   onDropPlayerToTeam(playerId, teamKey);
                 }
               }}
