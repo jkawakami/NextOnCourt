@@ -36,9 +36,15 @@ function SportHeader() {
           {currentSport} <span style={{ fontSize: '1.1rem', verticalAlign: 'middle' }}>▼</span>
         </span>
         {open && (
-          <div className="sport-emoji-menu" style={{ position: 'absolute', left: 0, top: '110%', background: 'white', border: '1px solid #e1e5e9', borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.18)', zIndex: 9999, minWidth: 80 }}>
-            <button className="sport-emoji-item" style={{ fontSize: '1.5rem', padding: '0.5rem 1.2rem', background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => handleSelect('🏀')}>🏀 Basketball</button>
-            <button className="sport-emoji-item" style={{ fontSize: '1.5rem', padding: '0.5rem 1.2rem', background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => handleSelect('🏐')}>🏐 Volleyball</button>
+          <div className="sport-emoji-menu" style={{ position: 'absolute', left: 0, top: '110%', background: 'white', border: '1px solid #e1e5e9', borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.18)', zIndex: 9999, minWidth: 140 }}>
+            <button className="sport-emoji-item" style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '1.1rem', padding: '0.5rem 1.2rem', background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => handleSelect('🏀')}>
+              <span style={{ fontSize: '1.5rem' }}>🏀</span>
+              <span>Basketball</span>
+            </button>
+            <button className="sport-emoji-item" style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '1.1rem', padding: '0.5rem 1.2rem', background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => handleSelect('🏐')}>
+              <span style={{ fontSize: '1.5rem' }}>🏐</span>
+              <span>Volleyball</span>
+            </button>
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import TeamDisplay from './TeamDisplay';
-import PlayerQueue from './PlayerQueue';
+import TeamDisplayVolleyball from './TeamDisplayVolleyball';
+import PlayerQueueVolleyball from './PlayerQueueVolleyball';
 
 function VolleyballPage() {
   const [players, setPlayers] = useState([]);
@@ -59,14 +59,17 @@ function VolleyballPage() {
   };
 
   const endGame = () => {
-    // Only rotate team1 to the end, but increment gamesPlayed for both teams
     const team1Players = players.filter(p => p.team === 'team1');
     const team2Players = players.filter(p => p.team === 'team2');
-    const rest = players.filter(p => p.team !== 'team1' && p.team !== 'team2');
-    if (team1Players.length === 0 && team2Players.length === 0) return;
+    const team3Players = players.filter(p => p.team === 'team3');
+    const team4Players = players.filter(p => p.team === 'team4');
+    const rest = players.filter(p => !['team1','team2','team3','team4'].includes(p.team));
+    if (team1Players.length === 0 && team2Players.length === 0 && team3Players.length === 0 && team4Players.length === 0) return;
     const updatedTeam1 = team1Players.map(p => ({ ...p, gamesPlayed: p.gamesPlayed + 1 }));
     const updatedTeam2 = team2Players.map(p => ({ ...p, gamesPlayed: p.gamesPlayed + 1 }));
-    setPlayers([...updatedTeam2, ...rest, ...updatedTeam1]);
+    const updatedTeam3 = team3Players.map(p => ({ ...p, gamesPlayed: p.gamesPlayed + 1 }));
+    const updatedTeam4 = team4Players.map(p => ({ ...p, gamesPlayed: p.gamesPlayed + 1 }));
+    setPlayers([...updatedTeam3, ...updatedTeam4, ...rest, ...updatedTeam1, ...updatedTeam2]);
   };
 
   const reorderPlayers = (newPlayers) => {
@@ -78,10 +81,12 @@ function VolleyballPage() {
     setPlayers(players => players.map(p => p.id === playerId ? { ...p, team } : p));
   };
 
-  // Compute teams based on player.team
+  // Compute teams based on player.team (4 teams)
   const currentTeams = {
     team1: players.filter(p => p.team === 'team1'),
-    team2: players.filter(p => p.team === 'team2')
+    team2: players.filter(p => p.team === 'team2'),
+    team3: players.filter(p => p.team === 'team3'),
+    team4: players.filter(p => p.team === 'team4'),
   };
 
   // Determine if the first game has been played
@@ -95,17 +100,17 @@ function VolleyballPage() {
   return (
     <>
       <div className="top-section">
-        <TeamDisplay 
+        <TeamDisplayVolleyball 
           teams={currentTeams}
           gameInProgress={true}
           onNextGame={endGame}
-          nextGameDisabled={currentTeams.team1.length < 1 || currentTeams.team2.length < 1}
+          nextGameDisabled={currentTeams.team1.length < 1 || currentTeams.team2.length < 1 || currentTeams.team3.length < 1 || currentTeams.team4.length < 1}
           players={players}
         />
       </div>
       <div className="bottom-section">
         <div className="left-panel">
-          <PlayerQueue 
+          <PlayerQueueVolleyball 
             players={players}
             onRemovePlayer={removePlayer}
             onMoveUp={movePlayerUp}
@@ -114,6 +119,8 @@ function VolleyballPage() {
             onAssignTeam={assignPlayerTeam}
             firstGamePlayed={firstGamePlayed}
             onResetQueue={resetQueue}
+            showAddPlayerNextToTitle
+            onAddPlayer={addPlayer}
           />
         </div>
       </div>

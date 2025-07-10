@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import TeamDisplay from './TeamDisplay';
-import PlayerQueue from './PlayerQueue';
+import TeamDisplayBasketball from './TeamDisplayBasketball';
+import PlayerQueueBasketball from './PlayerQueueBasketball';
 
 function BasketballPage() {
   const [players, setPlayers] = useState([]);
@@ -89,7 +89,7 @@ function BasketballPage() {
   return (
     <>
       <div className="top-section">
-        <TeamDisplay 
+        <TeamDisplayBasketball 
           teams={currentTeams}
           gameInProgress={true}
           onNextGame={endGame}
@@ -99,7 +99,7 @@ function BasketballPage() {
       </div>
       <div className="bottom-section">
         <div className="left-panel">
-          <PlayerQueue 
+          <PlayerQueueBasketball 
             players={players}
             onRemovePlayer={removePlayer}
             onMoveUp={movePlayerUp}
