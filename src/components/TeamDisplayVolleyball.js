@@ -161,8 +161,7 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
       </div>
       <div className="teams-container" style={{display: 'flex', flexWrap: 'wrap', gap: '2.5vw', justifyContent: 'center', alignItems: 'flex-start', width: '100%', maxWidth: '100vw'}}>
         {teamOrder.map((teamKey, i) => {
-          const borderColors = ['#38a169', '#e53e3e', '#3182ce', '#d69e2e', '#805ad5', '#319795', '#ed8936', '#718096'];
-          const borderColor = borderColors[i % borderColors.length];
+          const borderColor = '#4F7FFF'; // blue outline for all teams
           const isDragOver = dragOverTeam === teamKey;
           const isDragging = draggedTeam === teamKey;
           return (
@@ -184,9 +183,12 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
               }}
               draggable
               onDragStart={e => {
-                setDraggedTeam(teamKey);
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('teamKey', teamKey);
+                // Only set draggedTeam if this is a team drag (not a player drag)
+                if (!e.dataTransfer.types.includes('playerId')) {
+                  setDraggedTeam(teamKey);
+                  e.dataTransfer.effectAllowed = 'move';
+                  e.dataTransfer.setData('teamKey', teamKey);
+                }
               }}
               onDragEnd={() => setDraggedTeam(null)}
               onDragOver={e => { 
@@ -205,7 +207,10 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
                 const teamKeyDropped = e.dataTransfer.getData('teamKey');
                 const playerId = e.dataTransfer.getData('playerId');
                 
-                if (teamKeyDropped && teamKeyDropped !== teamKey && typeof onReorderTeams === 'function') {
+                if (playerId && typeof onDropPlayerToTeam === 'function') {
+                  // Assign player to team
+                  onDropPlayerToTeam(playerId, teamKey);
+                } else if (teamKeyDropped && teamKeyDropped !== teamKey && typeof onReorderTeams === 'function') {
                   // Reorder teams
                   const currentOrder = teamOrder;
                   const fromIndex = currentOrder.indexOf(teamKeyDropped);
@@ -214,10 +219,8 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
                   const [movedTeam] = newOrder.splice(fromIndex, 1);
                   newOrder.splice(toIndex, 0, movedTeam);
                   onReorderTeams(newOrder);
-                } else if (playerId && typeof onDropPlayerToTeam === 'function') {
-                  // Assign player to team
-                  onDropPlayerToTeam(playerId, teamKey);
                 }
+                setDraggedTeam(null); // Always clear draggedTeam after drop
               }}
             >
               <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 4}}>
@@ -256,7 +259,7 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
                 )}
               </div>
               <div className="team-players vertical" style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center'}}>
-                {teams[teamKey].map((player) => (
+                {(teams[teamKey] || []).map((player) => (
                   <div
                     key={player.id}
                     className="team-player"
@@ -277,7 +280,9 @@ const TeamDisplayVolleyball = ({ teams, gameInProgress, onNextGame, nextGameDisa
                     onDragStart={e => {
                       e.dataTransfer.effectAllowed = 'move';
                       e.dataTransfer.setData('playerId', player.id);
+                      // Do NOT set draggedTeam here
                     }}
+                    onDragEnd={() => setDraggedTeam(null)}
                   >
                     <span className="player-name">{player.name}</span>
                   </div>
