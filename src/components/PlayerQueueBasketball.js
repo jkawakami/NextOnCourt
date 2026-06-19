@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AddPlayerForm from './AddPlayerForm';
 
-const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers, firstGamePlayed, onResetQueue, showAddPlayerNextToTitle, onAddPlayer }) => {
+const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, onReorderPlayers, firstGamePlayed, onResetQueue, showAddPlayerNextToTitle, onAddPlayer, onEditPlayer }) => {
   const [draggedPlayer, setDraggedPlayer] = useState(null);
   const [dragOverPlayer, setDragOverPlayer] = useState(null);
   const [playerToRemove, setPlayerToRemove] = useState(null);
@@ -102,12 +102,23 @@ const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
     setEditName(player.name);
   };
   const handleEditSave = (player) => {
-    if (editName.trim() && editName !== player.name) {
-      const updatedPlayers = players.map(p =>
-        p.id === player.id ? { ...p, name: editName.trim() } : p
-      );
-      if (onReorderPlayers) onReorderPlayers(updatedPlayers);
+    const trimmedName = editName.trim();
+    if (!trimmedName || trimmedName === player.name) {
+      setEditingPlayer(null);
+      setMenuOpen(null);
+      return;
     }
+
+    if (onEditPlayer) {
+      const success = onEditPlayer(player.id, trimmedName);
+      if (!success) return;
+    } else if (onReorderPlayers) {
+      const updatedPlayers = players.map((p) =>
+        p.id === player.id ? { ...p, name: trimmedName } : p
+      );
+      onReorderPlayers(updatedPlayers);
+    }
+
     setEditingPlayer(null);
     setMenuOpen(null);
   };
@@ -161,7 +172,7 @@ const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
                   <AddPlayerForm
                     minimal
                     ref={addPlayerInputRef}
-                    onAddPlayer={onReorderPlayers ? (name) => onReorderPlayers([...players, { id: Date.now(), name, gamesPlayed: 0 }]) : () => {}}
+                    onAddPlayer={onAddPlayer || (() => {})}
                   />
                 </div>
               )}
@@ -271,7 +282,7 @@ const PlayerQueueBasketball = ({ players, onRemovePlayer, onMoveUp, onMoveDown, 
                     <AddPlayerForm
                       minimal
                       ref={addPlayerInputRef}
-                      onAddPlayer={onReorderPlayers ? (name) => onReorderPlayers([...players, { id: Date.now(), name, gamesPlayed: 0 }]) : () => {}}
+                      onAddPlayer={onAddPlayer || (() => {})}
                     />
                   </div>
                 )}

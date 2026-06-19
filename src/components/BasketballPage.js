@@ -1,11 +1,33 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TeamDisplayBasketball from './TeamDisplayBasketball';
 import PlayerQueueBasketball from './PlayerQueueBasketball';
+import {
+  DUPLICATE_NAME_ERROR,
+  isDuplicatePlayerName,
+  normalizePlayerName,
+} from '../utils/playerValidation';
 
 function BasketballPage() {
   const [players, setPlayers] = useState([]);
   const isFirstLoad = useRef(true);
-  const [addError, setAddError] = useState('');
+  const [playerError, setPlayerError] = useState('');
+  const errorTimeoutRef = useRef(null);
+
+  const showPlayerError = (message) => {
+    if (errorTimeoutRef.current) {
+      clearTimeout(errorTimeoutRef.current);
+    }
+    setPlayerError(message);
+    errorTimeoutRef.current = setTimeout(() => setPlayerError(''), 2500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Load players from localStorage on component mount
   useEffect(() => {
@@ -25,19 +47,43 @@ function BasketballPage() {
   }, [players]);
 
   const addPlayer = (playerName) => {
-    if (!playerName.trim()) return;
-    if (players.find(p => p.name.toLowerCase() === playerName.trim().toLowerCase())) {
-      setAddError('Player names must be unique.');
-      setTimeout(() => setAddError(''), 2500);
-      return;
+    const trimmedName = normalizePlayerName(playerName);
+    if (!trimmedName) return false;
+
+    if (isDuplicatePlayerName(players, trimmedName)) {
+      showPlayerError(DUPLICATE_NAME_ERROR);
+      return false;
     }
+
     const newPlayer = {
       id: Date.now(),
-      name: playerName.trim(),
+      name: trimmedName,
       gamesPlayed: 0
     };
     setPlayers([...players, newPlayer]);
-    setAddError('');
+    setPlayerError('');
+    return true;
+  };
+
+  const editPlayerName = (playerId, newName) => {
+    const trimmedName = normalizePlayerName(newName);
+    if (!trimmedName) return false;
+
+    const player = players.find((p) => p.id === playerId);
+    if (!player || player.name === trimmedName) return true;
+
+    if (isDuplicatePlayerName(players, trimmedName, playerId)) {
+      showPlayerError(DUPLICATE_NAME_ERROR);
+      return false;
+    }
+
+    setPlayers(
+      players.map((p) =>
+        p.id === playerId ? { ...p, name: trimmedName } : p
+      )
+    );
+    setPlayerError('');
+    return true;
   };
 
   const removePlayer = (playerId) => {
@@ -105,8 +151,8 @@ function BasketballPage() {
       </div>
       <div className="bottom-section">
         <div className="left-panel">
-          {addError && (
-            <div style={{ color: 'red', marginBottom: 8, fontWeight: 500 }}>{addError}</div>
+          {playerError && (
+            <div style={{ color: 'red', marginBottom: 8, fontWeight: 500 }}>{playerError}</div>
           )}
           <PlayerQueueBasketball 
             players={players}
@@ -118,6 +164,7 @@ function BasketballPage() {
             onResetQueue={resetQueue}
             showAddPlayerNextToTitle
             onAddPlayer={addPlayer}
+            onEditPlayer={editPlayerName}
           />
         </div>
       </div>
